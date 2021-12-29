@@ -5,7 +5,7 @@ import pandas as pd
 from scipy.stats import binom
 from random import normalvariate
 import math
-
+from tqdm import tqdm
 class Block(Enum):
     Valid = 1
     Invalid = 2
@@ -141,8 +141,10 @@ class DNServer:
         self.timer += 1
 
     def simulate(self, days=10):
-        for i in range(0, days*24*60):
-            self.tick()
+        with tqdm(total = days*24*60) as progressbar:
+            for i in range(0, days*24*60):
+                self.tick()
+                progressbar.update(1)
 
     
     def normal_choice(self, lst, mean=None, stddev=None):
@@ -178,7 +180,11 @@ class DNServer:
         if state == TrustState.Beginner:
             p=0.5
         else:
-            p = 1 / (1+np.e**(-k*(trustPoint-j)))
+            # untrusted 
+            tempNodeList = sorted(tempNodeList, key=lambda x: x.trustPoint, reverse=True)
+            if trustPoint > len(tempNodeList) * 0.1:
+                pass
+            pass
 
         for i in range(maxLimit):
                 mean, var  = binom.stats(len(tempNodeList), p)
