@@ -5,7 +5,7 @@ import pandas as pd
 from scipy.stats import binom
 from random import normalvariate
 import math
-from tqdm import tqdm
+
 class Block(Enum):
     Valid = 1
     Invalid = 2
@@ -141,10 +141,8 @@ class DNServer:
         self.timer += 1
 
     def simulate(self, days=10):
-        with tqdm(total = days*24*60) as progressbar:
-            for i in range(0, days*24*60):
-                self.tick()
-                progressbar.update(1)
+        for i in range(0, days*24*60):
+            self.tick()
 
     
     def normal_choice(self, lst, mean=None, stddev=None):
@@ -176,15 +174,32 @@ class DNServer:
                 tempNodeList.remove(node)
         
         # Check if the node is beginner
+        tempNodeList = sorted(tempNodeList, key=lambda x: x.trustPoint, reverse=True)
         p = 0.0
         if state == TrustState.Beginner:
             p=0.5
         else:
-            # untrusted 
-            tempNodeList = sorted(tempNodeList, key=lambda x: x.trustPoint, reverse=True)
-            if trustPoint > len(tempNodeList) * 0.1:
-                pass
-            pass
+            #p = 1 / (1+np.e**(-k*(trustPoint-j)))
+            if trustPoint <= tempNodeList[int(len(tempNodeList) * 0.1)].trustPoint:
+                p = 0.1
+            elif (trustPoint <= tempNodeList[int(len(tempNodeList) * 0.2)].trustPoint):
+                p = 0.2
+            elif (trustPoint <= tempNodeList[int(len(tempNodeList) * 0.3)].trustPoint):
+                p = 0.3
+            elif (trustPoint <= tempNodeList[int(len(tempNodeList) * 0.4)].trustPoint):
+                p = 0.4
+            elif (trustPoint <= tempNodeList[int(len(tempNodeList) * 0.5)].trustPoint):
+                p = 0.5
+            elif (trustPoint <= tempNodeList[int(len(tempNodeList) * 0.6)].trustPoint):
+                p = 0.6
+            elif (trustPoint <= tempNodeList[int(len(tempNodeList) * 0.7)].trustPoint):
+                p = 0.7
+            elif (trustPoint <= tempNodeList[int(len(tempNodeList) * 0.8)].trustPoint):
+                p = 0.8
+            elif (trustPoint <= tempNodeList[int(len(tempNodeList) * 0.9)].trustPoint):
+                p = 0.9
+            else:
+                p = 0.95
 
         for i in range(maxLimit):
                 mean, var  = binom.stats(len(tempNodeList), p)
