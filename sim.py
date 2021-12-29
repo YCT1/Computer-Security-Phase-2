@@ -25,7 +25,7 @@ print("Attacking Phase")
 
 NUMBER_OF_NODE_ATTACKER = 50
 nodeListAttacker = []
-for i in range(NUMBER_OF_NODE_ATTACKER):
+for i in range(100,100+NUMBER_OF_NODE_ATTACKER):
     node = Node(i,correctSendingProbability=0.7,isAttacker=True)
     nodeListAttacker.append(node)
 

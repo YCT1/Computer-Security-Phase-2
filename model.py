@@ -183,9 +183,9 @@ class DNServer:
         else:
             #p = 1 / (1+np.e**(-k*(trustPoint-j)))
             if trustPoint <= tempNodeList[int(len(tempNodeList) * 0.1)].trustPoint:
-                p = 0.1
+                p = 0.3
             elif (trustPoint <= tempNodeList[int(len(tempNodeList) * 0.2)].trustPoint):
-                p = 0.2
+                p = 0.3
             elif (trustPoint <= tempNodeList[int(len(tempNodeList) * 0.3)].trustPoint):
                 p = 0.3
             elif (trustPoint <= tempNodeList[int(len(tempNodeList) * 0.4)].trustPoint):
