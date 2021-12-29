@@ -1,5 +1,6 @@
 from enum import Enum
 import random as rd
+import pandas as pd
 
 class Block(Enum):
     Valid = 1
@@ -11,6 +12,57 @@ class TrustState(Enum):
     Beginner = 3
     Suspicious = 4
     Untrusted = 5
+class Node:
+    def __init__(self, id, correctSendingProbability=0.9):
+        self.id = id
+        self.trustPoint = 0
+        self.neighbors = []
+        self.limit = 25
+
+        self.BlockCount = 0
+
+        self.isReachedToLimit = False
+        self.isTrusted = ""
+        self.isActive = True
+
+        self.sended = [0,0] #  (Valid, Invalid)
+
+        self.correctSendingProbability = correctSendingProbability
+    # If the sended blockchain correct, this function will be called to increase trust point
+    def addTrustPoint(self, k=0.07, epsilon=10**-3):
+        self.trustPoint = self.trustPoint + 1/(k * (abs(self.trustPoint)+epsilon))
+
+    # If the sended blockchain wrong, ithis function will be called to reduce trust point
+    def reduceTrustPoint(self, j=0.3,c = -5):
+        self.trustPoint = self.trustPoint - (j*abs(self.trustPoint)) + c
+    
+    # Reduce the trust point with time
+    def timedReduce(self, d=0.99993):
+        self.trustPoint *= d
+
+    # Connect to neighbors from server
+    def connectNeighbors (self,neighbors:list):
+        self.neighbors = neighbors
+
+        if len(neighbors) > self.limit:
+            raise ValueError("Nodes cannot have more than ", self.limit)
+        else:
+            pass
+    
+    # Sending to the server
+    def send(self):
+        self.BlockCount += 1
+
+        probabality = rd.random()
+        
+        if probabality > self.correctSendingProbability:
+            # Yanlış
+            self.sended[1] += 1
+            return Block.Invalid
+        else:
+            self.sended[0] += 1
+            return Block.Valid
+
 
 class DNServer:
     def __init__(self, nodes : list, timedReduceMinutes=30):
@@ -18,9 +70,31 @@ class DNServer:
         self.timer = 0
         self.timedReduceMinutes = timedReduceMinutes
     def tick(self):
-        #Do Something
-        pass
         
+        # Get all blocks from all nodes (every 10 min)
+        
+            # Update Trust Points by checking valid or invalid blocks
+
+            # Update Trust States for each node
+
+        if self.timer % 10 == 0:
+            # Get all blocks
+            for node in self.nodes:
+                block = node.send() 
+                if block == Block.Invalid:
+                    node.reduceTrustPoint()
+                else:
+                    node.addTrustPoint()
+        # Send newly Updated Lists to all connected Nodes (every 30 minutes)
+            # Get the recommendations and send it to all nodes
+        
+
+        if self.timer%30 == 0:
+            for node in self.nodes:
+                #recommendationList = self.recommendNeighbors()
+                #node.connectNeighbors(recommendationList)
+                pass
+
         # Reduce the Trust point if desired minutes passed
         if self.timer%self.timedReduceMinutes == 0:
             for node in self.nodes:
@@ -35,57 +109,18 @@ class DNServer:
 
 
     def recommendNeighbors(self):
+        # List of Nodes should be return
         pass
 
-class Node:
-    def __init__(self, id, DNServer: DNServer, correctSendingProbabity=0.9):
-        self.id = id
-        self.trustPoint = 0
-        self.neighbors = []
-        self.limit = 25
+    def getCurrentState(self):
 
-        self.BlockCount = 0
+        results = []
 
-        self.isReachedToLimit = False
-        self.isTrusted = ""
-        self.isActive = True
-
-        self.DNServer = DNServer
-
-        self.correctSendingProbabity = correctSendingProbabity
-    # If the sended blockchain correct, this function will be called to increase trust point
-    def addTrustPoint(self, k=0.07):
-        self.trustPoint = self.trustPoint + 1/(k * self.trustPoint)
-
-    # If the sended blockchain wrong, ithis function will be called to reduce trust point
-    def reduceTrustPoint(self, j=0.3,c = -5):
-        self.trustPoint = self.trustPoint - (j*self.trustPoint) + c
-    
-    # Reduce the trust point with time
-    def timedReduce(self, d=0.99993):
-        self.trustPoint *= d
-
-    # Connect to neighbors via server
-    def connectNeighbors (self):
-        neighbors = self.DNServer.recommendNeighbors()
-        self.neighbors = neighbors
-
-        if len(neighbors) > self.limit:
-            raise ValueError("Nodes cannot have more than ", self.limit)
-        else:
-            pass
-    
-    # Sending to the server
-    def send(self, block:Block):
-        self.BlockCount += 1
-
-        probabality = rd.random()
+        for node in self.nodes:
+            results.append( (node.id, node.trustPoint, node.sended))
         
-        
-        if probabality > self.correctSendingProbabity:
-            # Yanlış
-            return block.Invalid
-        else:
-            return block.Valid
+        #state = pd.DataFrame(self.nodes)
+
+        return results
 
 
