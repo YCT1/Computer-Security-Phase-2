@@ -1,0 +1,5 @@
+0 Fully Trustworthy Top 20% of the users
+1 Trustworthy Trust Point >10
+2 Beginner Less than 10 block operations
+3 Suspicious -25 to 10 Trust Point
+4 Untrusted Less than -25 Trust Point
