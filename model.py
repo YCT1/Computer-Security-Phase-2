@@ -5,7 +5,7 @@ import pandas as pd
 from scipy.stats import binom
 from random import normalvariate
 import math
-import tqdm
+from tqdm import tqdm
 class Block(Enum):
     Valid = 1
     Invalid = 2
