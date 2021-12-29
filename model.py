@@ -5,7 +5,7 @@ import pandas as pd
 from scipy.stats import binom
 from random import normalvariate
 import math
-
+import tqdm
 class Block(Enum):
     Valid = 1
     Invalid = 2
@@ -141,8 +141,10 @@ class DNServer:
         self.timer += 1
 
     def simulate(self, days=10):
-        for i in range(0, days*24*60):
-            self.tick()
+        with tqdm(total = days*24*60) as progressbar:
+            for i in range(0, days*24*60):
+                self.tick()
+                progressbar.update(1)
 
     
     def normal_choice(self, lst, mean=None, stddev=None):
