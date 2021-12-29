@@ -38,7 +38,7 @@ server.simulate(days=1)
 print("OLDU")
 
 results =  server.getCurrentState()
-results = sorted(results, key=lambda x: x[1], reverse=True)
+#results = sorted(results, key=lambda x: x[1], reverse=True)
 for result in results:
     print(result)
 

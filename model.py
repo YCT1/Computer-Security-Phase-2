@@ -131,7 +131,7 @@ class DNServer:
                         attackerNumber += 1
                     else:
                         node.ratio[1] += 1
-                if attackerNumber == len(reccomendation):
+                if attackerNumber == len(recommendationList):
                     print("CAPTURED:" ,node.id)
                             
 
@@ -145,7 +145,7 @@ class DNServer:
             self.tick()
 
     
-    def normal_choice(lst, mean=None, stddev=None):
+    def normal_choice(self, lst, mean=None, stddev=None):
         if mean is None:
             # if mean is not specified, use center of list
             mean = (len(lst) - 1) / 2
@@ -167,7 +167,7 @@ class DNServer:
 
         # List of Nodes should be return
         recommendationList = []
-        tempNodeList = self.nodes
+        tempNodeList = self.nodes.copy()
 
         for node in self.nodes:
             if node.trustState == TrustState.Untrusted:
