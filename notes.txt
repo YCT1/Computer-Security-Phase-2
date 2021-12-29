@@ -3,3 +3,11 @@
 2 Beginner Less than 10 block operations
 3 Suspicious -25 to 10 Trust Point
 4 Untrusted Less than -25 Trust Point
+
+
+We will create the list by using 
+Current users = [Fully Trustworthy, Trustworthy , Suspicious/Beginner ] 
+with Binomial Distribution where p=Trustpoint (Normalized)
+
+Beginner users = [Fully Trustworthy, Trustworthy , Suspicious/Beginner ] 
+with Binomial Distribution where p=0.5

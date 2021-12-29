@@ -1,6 +1,10 @@
 from enum import Enum
 import random as rd
+import numpy as np
 import pandas as pd
+from scipy.stats import binom
+from random import normalvariate
+import math
 
 class Block(Enum):
     Valid = 1
@@ -13,7 +17,7 @@ class TrustState(Enum):
     Suspicious = 4
     Untrusted = 5
 class Node:
-    def __init__(self, id, correctSendingProbability=0.9):
+    def __init__(self, id, correctSendingProbability=0.9, isAttacker = False):
         self.id = id
         self.trustPoint = 0
         self.neighbors = []
@@ -25,7 +29,9 @@ class Node:
         self.trustState = TrustState.Beginner
         self.isActive = True
 
+        self.isAttacker = isAttacker
         self.sended = [0,0] #  (Valid, Invalid)
+        self.ratio = [0,0] # (Attacker,Trusted)
 
         self.correctSendingProbability = correctSendingProbability
     # If the sended blockchain correct, this function will be called to increase trust point
@@ -116,9 +122,18 @@ class DNServer:
 
         if self.timer%30 == 0:
             for node in self.nodes:
-                #recommendationList = self.recommendNeighbors()
-                #node.connectNeighbors(recommendationList)
-                pass
+                recommendationList = self.recommendNeighbors(node)
+                node.connectNeighbors(recommendationList)
+                attackerNumber = 0
+                for reccomendation in recommendationList:
+                    if reccomendation.isAttacker:
+                        node.ratio[0] += 1
+                        attackerNumber += 1
+                    else:
+                        node.ratio[1] += 1
+                if attackerNumber == len(reccomendation):
+                    print("CAPTURED:" ,node.id)
+                            
 
         
 
@@ -129,17 +144,57 @@ class DNServer:
         for i in range(0, days*24*60):
             self.tick()
 
+    
+    def normal_choice(lst, mean=None, stddev=None):
+        if mean is None:
+            # if mean is not specified, use center of list
+            mean = (len(lst) - 1) / 2
 
-    def recommendNeighbors(self):
+        if stddev is None:
+            # if stddev is not specified, let list be -3 .. +3 standard deviations
+            stddev = len(lst) / 6
+
+        while True:
+            index = int(normalvariate(mean, stddev) + 0.5)
+            if 0 <= index < len(lst):
+                return lst[index]
+
+    def recommendNeighbors(self, node:Node, k= 1 , j=0):
+
+        state = node.trustState
+        maxLimit = node.limit
+        trustPoint = node.trustPoint
+
         # List of Nodes should be return
-        pass
+        recommendationList = []
+        tempNodeList = self.nodes
+
+        for node in self.nodes:
+            if node.trustState == TrustState.Untrusted:
+                tempNodeList.remove(node)
+        
+        # Check if the node is beginner
+        p = 0.0
+        if state == TrustState.Beginner:
+            p=0.5
+        else:
+            p = 1 / (1+np.e**(-k*(trustPoint-j)))
+
+        for i in range(maxLimit):
+                mean, var  = binom.stats(len(tempNodeList), p)
+                result = self.normal_choice(tempNodeList,mean=mean,stddev=math.sqrt(var))
+                recommendationList.append(result)
+                tempNodeList.remove(result)    
+        return recommendationList
+        
 
     def getCurrentState(self):
 
         results = []
-
+        
         for node in self.nodes:
-            results.append( (node.id, node.trustPoint, node.sended, node.trustState.name))
+            avgr = node.ratio[1] / (node.ratio[0]+ node.ratio[1])
+            results.append( (node.id, node.trustPoint, node.sended, node.trustState.name, avgr))
         
         #state = pd.DataFrame(self.nodes)
 
