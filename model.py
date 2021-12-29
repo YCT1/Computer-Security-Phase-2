@@ -22,7 +22,7 @@ class Node:
         self.BlockCount = 0
 
         self.isReachedToLimit = False
-        self.isTrusted = ""
+        self.trustState = TrustState.Beginner
         self.isActive = True
 
         self.sended = [0,0] #  (Valid, Invalid)
@@ -70,6 +70,11 @@ class DNServer:
         self.timer = 0
         self.timedReduceMinutes = timedReduceMinutes
     def tick(self):
+        # Reduce the Trust point if desired minutes passed
+        if self.timer%self.timedReduceMinutes == 0:
+            for node in self.nodes:
+                if node.trustState != TrustState.Beginner:
+                    node.timedReduce()
         
         # Get all blocks from all nodes (every 10 min)
         
@@ -79,12 +84,32 @@ class DNServer:
 
         if self.timer % 10 == 0:
             # Get all blocks
+            nodesSortedTrusted = []
             for node in self.nodes:
                 block = node.send() 
                 if block == Block.Invalid:
                     node.reduceTrustPoint()
                 else:
                     node.addTrustPoint()
+                
+                # Update Nodes Trust
+                if node.BlockCount < 10:
+                    node.trustState = TrustState.Beginner
+                else:
+                    if node.trustPoint > 10:
+                        node.trustState = TrustState.Trustworthy
+                        nodesSortedTrusted.append(node)
+                    elif node.trustPoint <= 10 and node.trustPoint > -25:
+                        node.trustState = TrustState.Suspicious
+                    elif node.trustPoint <= -25:
+                        node.trustState = TrustState.Untrusted
+                # Full Trustworthy
+                
+            # Gets trustworthy nodes and sorts according to trust point     
+            nodesSortedTrusted = sorted(nodesSortedTrusted, key=lambda x: x.trustPoint, reverse=True)
+            for i in range( int(len(nodesSortedTrusted)*0.2)):
+                nodesSortedTrusted[i].trustState = TrustState.FullyTrustworthy
+                
         # Send newly Updated Lists to all connected Nodes (every 30 minutes)
             # Get the recommendations and send it to all nodes
         
@@ -95,10 +120,7 @@ class DNServer:
                 #node.connectNeighbors(recommendationList)
                 pass
 
-        # Reduce the Trust point if desired minutes passed
-        if self.timer%self.timedReduceMinutes == 0:
-            for node in self.nodes:
-                node.timedReduce()
+        
 
         # Increase the timer        
         self.timer += 1
@@ -117,7 +139,7 @@ class DNServer:
         results = []
 
         for node in self.nodes:
-            results.append( (node.id, node.trustPoint, node.sended))
+            results.append( (node.id, node.trustPoint, node.sended, node.trustState.name))
         
         #state = pd.DataFrame(self.nodes)
 
