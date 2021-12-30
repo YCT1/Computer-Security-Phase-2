@@ -161,7 +161,7 @@ class DNServer:
             if 0 <= index < len(lst):
                 return lst[index]
 
-    def recommendNeighbors(self, node:Node, k= 1 , j=0):
+    def recommendNeighbors(self, node:Node):
 
         state = node.trustState
         maxLimit = node.limit
@@ -181,7 +181,6 @@ class DNServer:
         if state == TrustState.Beginner:
             p=0.5
         else:
-            #p = 1 / (1+np.e**(-k*(trustPoint-j)))
             if trustPoint <= tempNodeList[int(len(tempNodeList) * 0.1)].trustPoint:
                 p = 0.3
             elif (trustPoint <= tempNodeList[int(len(tempNodeList) * 0.2)].trustPoint):
@@ -217,10 +216,10 @@ class DNServer:
         
         for node in self.nodes:
             avgr = node.ratio[1] / (node.ratio[0]+ node.ratio[1])
-            results.append( (node.id, node.trustPoint, node.sended, node.trustState.name, avgr))
+            results.append( (node.id, node.trustPoint, node.sended, node.trustState.value, avgr))
         
-        #state = pd.DataFrame(self.nodes)
+        state = pd.DataFrame(results)
 
-        return results
+        return results,state
 
 

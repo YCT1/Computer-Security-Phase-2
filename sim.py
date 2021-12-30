@@ -1,5 +1,5 @@
 from model import DNServer, Node
-
+import pandas as pd
 
 NUMBER_OF_NODE = 100
 nodeList = []
@@ -16,7 +16,7 @@ server.simulate(days=3)
 
 print("OLDU")
 
-results =  server.getCurrentState()
+results,data =  server.getCurrentState()
 
 for result in results:
     print(result)
@@ -37,8 +37,11 @@ server.simulate(days=1)
 
 print("OLDU")
 
-results =  server.getCurrentState()
+results,data =  server.getCurrentState()
+
 #results = sorted(results, key=lambda x: x[1], reverse=True)
 for result in results:
     print(result)
+
+print(data)
 
